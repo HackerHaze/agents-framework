@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "lib": [
+            "dom",
+            "esnext"
+        ],
+        "esModuleInterop": true
+        // ... other options
+    }
+    // ... other settings
+}
