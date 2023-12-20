@@ -1,0 +1,40 @@
+digraph G {
+    node [shape = box;];
+    
+    BaseAgent [label = "BaseAgent";];
+    BrowsePlugin [label = "BrowsePlugin";];
+    OpenAIHelper [label = "OpenAIHelper";];
+    EventEmitter [label = "EventEmitter";];
+    Logger [label = "Logger";];
+    TaskQueue [label = "TaskQueue";];
+    AgentRegistry [label = "AgentRegistry";];
+    
+    BaseAgent -> BrowsePlugin [label = "registers";];
+    BaseAgent -> OpenAIHelper [label = "registers";];
+    BaseAgent -> EventEmitter [label = "uses";];
+    BaseAgent -> Logger [label = "uses";];
+    BaseAgent -> TaskQueue [label = "manages";];
+    BaseAgent -> AgentRegistry [label = "manages";];
+    
+    BrowsePlugin -> EventEmitter [label = "emits to";];
+    OpenAIHelper -> EventEmitter [label = "emits to";];
+    
+    EventEmitter -> Logger [label = "on state change";];
+    EventEmitter -> TaskQueue [label = "on task queued/executed";];
+    EventEmitter -> AgentRegistry [label = "on agent registered/updated";];
+    
+    subgraph cluster_0 {
+        label = "BaseAgent Core";
+        BaseAgent;
+        EventEmitter;
+        Logger;
+        TaskQueue;
+        AgentRegistry;
+    }
+    
+    subgraph cluster_1 {
+        label = "Plugins";
+        BrowsePlugin;
+        OpenAIHelper;
+    }
+}
