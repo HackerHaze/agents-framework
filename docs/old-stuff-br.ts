@@ -226,7 +226,6 @@ async function processMessage(page, messageText, timeout) {
 
   console.log("GPT: How can I assist you today?");
   const prompt = await input("You: ");
-  console.log();
 
   messages.push({
     role: "user",
@@ -292,7 +291,7 @@ async function processMessage(page, messageText, timeout) {
       content: messageText,
     });
 
-    console.log("GPT: " + messageText);
+    console.log("GPT: 295 " + messageText);
 
     if (messageText.indexOf('{"click": "') !== -1) {
       let parts = messageText.split('{"click": "');

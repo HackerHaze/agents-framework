@@ -1,5 +1,6 @@
 import { EventEmitter } from "events";
 import { createOpenAIHelper } from "../handlers/open-ai";
+import { pluginStrategies } from "../plugins/strategies";
 
 // To be moved to core
 export type AgentState = "initializing" | "idle" | "busy" | "error" | "active";
@@ -40,7 +41,16 @@ const createLogger = (log: boolean): Logger => {
     },
   };
 };
+
 export const createBaseAgent = (useOpenAI = false, log = false) => {
+  const pluginApi: PluginApi = {
+    emit: (event, ...args) => eventEmitter.emit(event, ...args),
+    on: (event, listener) => eventEmitter.on(event, listener),
+    off: (event, listener) => eventEmitter.off(event, listener),
+    performAction: (pluginName, action, ...args) =>
+      performAction(pluginName, action, ...args),
+  };
+
   const eventEmitter = new EventEmitter();
   const logger = createLogger(log);
   let plugins: Record<string, Plugin> = {};
@@ -60,13 +70,7 @@ export const createBaseAgent = (useOpenAI = false, log = false) => {
     if (plugins[pluginName]) {
       throw new Error(`Plugin ${pluginName} is already registered.`);
     }
-    const pluginApi: PluginApi = {
-      emit: (event, ...args) => eventEmitter.emit(event, ...args),
-      on: (event, listener) => eventEmitter.on(event, listener),
-      off: (event, listener) => eventEmitter.off(event, listener),
-      performAction: (pluginName, action, ...args) =>
-        performAction(pluginName, action, ...args),
-    };
+
     plugins[pluginName] = pluginFactory(pluginApi);
   };
 
@@ -82,6 +86,21 @@ export const createBaseAgent = (useOpenAI = false, log = false) => {
       return plugins[pluginName][action](...args);
     } else {
       throw new Error(`Plugin ${pluginName} does not support action ${action}`);
+    }
+  };
+
+  const performStrategy = async (
+    pluginName: string,
+    strategyName: string,
+    ...args: any[]
+  ): Promise<any> => {
+    const strategies = pluginStrategies[pluginName];
+    if (strategies && typeof strategies[strategyName] === "function") {
+      return strategies[strategyName](pluginApi, ...args);
+    } else {
+      throw new Error(
+        `Strategy ${strategyName} is not available for plugin ${pluginName}`
+      );
     }
   };
   const transitionState = (newState: AgentState) => {
@@ -135,6 +154,7 @@ export const createBaseAgent = (useOpenAI = false, log = false) => {
   return {
     use,
     performAction,
+    performStrategy,
     on: eventEmitter.on.bind(eventEmitter),
     off: eventEmitter.off.bind(eventEmitter),
     transitionState,
