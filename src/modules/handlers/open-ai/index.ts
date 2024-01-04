@@ -1,14 +1,11 @@
-// src/modules/openai-handler/openaiHelper.ts
 import OpenAI from "openai";
 import {
-  ChatCompletionContentPart,
   ChatCompletionMessage,
   ChatCompletionMessageParam,
-  ChatCompletionRole,
 } from "openai/resources";
-
+import "dotenv/config";
 const openai = new OpenAI({
-  apiKey: "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",
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 export const createOpenAIHelper = () => {
